@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exam Registration Portal</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #4CAF50, #2c7a7b);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.form-container {
+    background: white;
+    padding: 30px;
+    width: 350px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background: #45a049;
+}
+
+.captcha-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+canvas {
+    border-radius: 6px;
+    background: #f2f2f2;
+}
+
+.refresh {
+    cursor: pointer;
+    font-size: 20px;
+    margin-left: 10px;
+}
+
+.message {
+    margin-top: 10px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.error { color: red; }
+.success { color: green; }
+</style>
+</head>
+
+<body>
+
+<div class="form-container">
+    <h2>Exam Registration</h2>
+
+    <form id="registrationForm">
+        <input type="text" id="name" placeholder="Full Name" required>
+        <input type="text" id="phone" placeholder="Phone Number (10 digits)" required>
+        <input type="email" id="email" placeholder="Gmail Address" required>
+
+        <div class="captcha-box">
+            <canvas id="captchaCanvas" width="200" height="60"></canvas>
+            <span class="refresh" onclick="generateCaptcha()">🔄</span>
+        </div>
+
+        <input type="text" id="captchaInput" placeholder="Enter CAPTCHA" required>
+
+        <button type="submit">Register</button>
+        <div id="message" class="message"></div>
+    </form>
+</div>
+
+<script>
+
+let currentCaptcha = "";
+
+function generateCaptcha() {
+    const canvas = document.getElementById("captchaCanvas");
+    const ctx = canvas.getContext("2d");
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&";
+    currentCaptcha = "";
+
+    // Generate 8-character captcha
+    for (let i = 0; i < 8; i++) {
+        currentCaptcha += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    // Background
+    ctx.fillStyle = "#f2f2f2";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw characters with distortion
+    for (let i = 0; i < currentCaptcha.length; i++) {
+        const x = 20 + i * 20;
+        const y = 35 + Math.random() * 10;
+
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate((Math.random() - 0.5) * 0.7);
+
+        ctx.font = `${22 + Math.random() * 6}px Arial`;
+        ctx.fillStyle = randomColor();
+        ctx.fillText(currentCaptcha[i], 0, 0);
+
+        ctx.restore();
+    }
+
+    // Add noise lines
+    for (let i = 0; i < 6; i++) {
+        ctx.strokeStyle = randomColor();
+        ctx.beginPath();
+        ctx.moveTo(Math.random() * 200, Math.random() * 60);
+        ctx.lineTo(Math.random() * 200, Math.random() * 60);
+        ctx.stroke();
+    }
+
+    // Add noise dots
+    for (let i = 0; i < 40; i++) {
+        ctx.fillStyle = randomColor();
+        ctx.beginPath();
+        ctx.arc(Math.random() * 200, Math.random() * 60, 1.2, 0, 2 * Math.PI);
+        ctx.fill();
+    }
+}
+
+function randomColor() {
+    const letters = "0123456789ABCDEF";
+    let color = "#";
+    for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+
+generateCaptcha();
+
+document.getElementById("registrationForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const phone = document.getElementById("phone").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const captchaInput = document.getElementById("captchaInput").value.trim();
+    const message = document.getElementById("message");
+
+    const phonePattern = /^[0-9]{10}$/;
+    const gmailPattern = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+
+    if (!phonePattern.test(phone)) {
+        message.innerHTML = "Invalid phone number. Enter 10 digits.";
+        message.className = "message error";
+        return;
+    }
+
+    if (!gmailPattern.test(email)) {
+        message.innerHTML = "Only Gmail addresses are allowed.";
+        message.className = "message error";
+        return;
+    }
+
+    if (captchaInput !== currentCaptcha) {
+        message.innerHTML = "Incorrect CAPTCHA. Try again.";
+        message.className = "message error";
+        generateCaptcha();
+        return;
+    }
+
+    message.innerHTML = "Registration Successful!";
+    message.className = "message success";
+
+    document.getElementById("registrationForm").reset();
+    generateCaptcha();
+});
+
+</script>
+
+</body>
+</html>
