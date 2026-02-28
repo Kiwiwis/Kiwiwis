@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Exam Tracker</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --border: #e2e8f0;
+        }
+
+        body.dark {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            transition: all 0.3s ease;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+        }
+
+        h1, h2, h3 { margin-top: 0; }
+
+        /* Controls & Forms */
+        .grid-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+        }
+
+        select, input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text-main);
+            box-sizing: border-box;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            gap: 8px;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-outline { border: 1px solid var(--border); background: transparent; color: var(--text-main); }
+
+        /* Table Styles */
+        .table-container { overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 2px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 16px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .badge-danger { background: #fee2e2; color: #b91c1c; }
+        .badge-success { background: #dcfce7; color: #15803d; }
+
+        /* Exam Selection Chips */
+        .chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .chip {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            background: var(--bg);
+            user-select: none;
+        }
+
+        .chip.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .hidden { display: none; }
+
+        .countdown-box {
+            font-family: monospace;
+            font-size: 1.1rem;
+            color: var(--primary);
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .grid-exams {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .delete-btn { color: var(--danger); background: none; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>📅 ExamTracker <span style="font-weight: 300; font-size: 1rem;"></span></h1>
+        <button class="btn btn-outline" onclick="toggleDarkMode()">🌓 Toggle Theme</button>
+    </header>
+
+    <section class="card">
+        <h2>🚀 Quick Setup</h2>
+        <p style="color: var(--text-muted)">Select your state to find common exams or track specific deadlines.</p>
+        
+        <div class="grid-form">
+            <div>
+                <label>Home State</label>
+                <select id="stateSelect" onchange="refreshExamList()">
+                    <option value="">--Select State--</option>
+                    <option value="Maharashtra">Maharashtra</option>
+                    <option value="Karnataka">Karnataka</option>
+                    <option value="Tamil Nadu">Tamil Nadu</option>
+                    <option value="Uttar Pradesh">Uttar Pradesh</option>
+                    <option value="West Bengal">West Bengal</option>
+                    <option value="Bihar">Bihar</option>
+                </select>
+            </div>
+            <div id="stateExamsContainer" class="hidden">
+                <label>Available Exams</label>
+                <div id="examChips" class="chips-container"></div>
+            </div>
+        </div>
+    </section>
+
+    <div id="trackingSection" class="grid-exams"></div>
+
+    <section class="card">
+        <h2>➕ Add Custom Exam</h2>
+        <div class="grid-form">
+            <div>
+                <label>Exam Name</label>
+                <input type="text" id="customName" placeholder="e.g. BITSAT">
+            </div>
+            <div>
+                <label>Reg. Deadline</label>
+                <input type="date" id="customDeadline">
+            </div>
+            <div>
+                <label>Official Link</label>
+                <input type="url" id="customLink" placeholder="https://...">
+            </div>
+            <button class="btn btn-primary" onclick="addCustomExam()">Add to Board</button>
+        </div>
+
+        <div class="table-container" style="margin-top: 30px;">
+            <h3>Your Custom Dashboard</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Exam</th>
+                        <th>Deadline</th>
+                        <th>Days Left</th>
+                        <th>Link</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="customTableBody"></tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<script>
+    // Configuration Data
+    const nationalExams = {
+        "JEE Main": { date: "2026-04-02", deadline: "2026-02-28", link: "https://jeemain.nta.nic.in/" },
+        "NEET": { date: "2026-05-03", deadline: "2026-03-15", link: "https://neet.nta.nic.in/" },
+        "UPSC CSE": { date: "2026-05-24", deadline: "2026-02-03", link: "https://upsc.gov.in/" }
+    };
+
+    const stateExams = {
+        "Maharashtra": { "MHT CET": { date: "2026-04-20", deadline: "2026-03-05", link: "https://cetcell.mahacet.org/" } },
+        "Karnataka": { "KCET": { date: "2026-04-18", deadline: "2026-03-01", link: "https://cetonline.karnataka.gov.in/" } }
+    };
+
+    // Robust Timer Management
+    const activeTimers = {};
+    let customExams = JSON.parse(localStorage.getItem("customExams")) || [];
+    let selectedExams = new Set();
+
+    // Theme Logic
+    function toggleDarkMode() {
+        document.body.classList.toggle("dark");
+        localStorage.setItem("darkMode", document.body.classList.contains("dark"));
+    }
+    if (localStorage.getItem("darkMode") === "true") document.body.classList.add("dark");
+
+    // UI Logic for State Selection
+    function refreshExamList() {
+        const state = document.getElementById("stateSelect").value;
+        const container = document.getElementById("stateExamsContainer");
+        const chips = document.getElementById("examChips");
+        
+        if (!state) { container.classList.add("hidden"); return; }
+        
+        container.classList.remove("hidden");
+        chips.innerHTML = "";
+        selectedExams.clear();
+        document.getElementById("trackingSection").innerHTML = "";
+
+        const available = { ...nationalExams, ...(stateExams[state] || {}) };
+        
+        Object.keys(available).forEach(name => {
+            const div = document.createElement("div");
+            div.className = "chip";
+            div.innerText = name;
+            div.onclick = () => toggleExamSelection(name, available[name], div);
+            chips.appendChild(div);
+        });
+    }
+
+    function toggleExamSelection(name, data, element) {
+        if (selectedExams.has(name)) {
+            selectedExams.delete(name);
+            element.classList.remove("active");
+            const card = document.getElementById(`card-${name.replace(/\s/g, '')}`);
+            if (card) card.remove();
+        } else {
+            selectedExams.add(name);
+            element.classList.add("active");
+            createTrackingCard(name, data);
+        }
+    }
+
+    function createTrackingCard(name, data) {
+        const id = name.replace(/\s/g, '');
+        const section = document.getElementById("trackingSection");
+        
+        const card = document.createElement("div");
+        card.className = "card";
+        card.id = `card-${id}`;
+        card.innerHTML = `
+            <h3>${name}</h3>
+            <div>
+                <label>Current Progress:</label>
+                <select onchange="updateCardDisplay('${id}', '${data.deadline}', '${data.date}', '${data.link}', this.value)">
+                    <option value="not_reg">Not Registered</option>
+                    <option value="pending_pay">Registered (Payment Pending)</option>
+                    <option value="done">Completed</option>
+                </select>
+            </div>
+            <div id="countdown-area-${id}" class="countdown-box"></div>
+            <div style="margin-top:15px">
+                <a href="${data.link}" target="_blank" class="btn btn-primary">Action Portal</a>
+            </div>
+        `;
+        section.appendChild(card);
+        updateCardDisplay(id, data.deadline, data.date, data.link, "not_reg");
+    }
+
+    function updateCardDisplay(id, deadline, examDate, link, status) {
+        const target = (status === 'done') ? examDate : deadline;
+        const timerId = `timer-${id}`;
+        const display = document.getElementById(`countdown-area-${id}`);
+        
+        display.innerHTML = `<span id="${timerId}"></span>`;
+        startCountdown(target, timerId, status === 'done' ? "Exam Day!" : "Deadline Passed");
+    }
+
+    // Fixed Timer Engine
+    function startCountdown(target, elementId, expiryText) {
+        if (activeTimers[elementId]) clearInterval(activeTimers[elementId]);
+
+        const update = () => {
+            const diff = new Date(target) - new Date();
+            const el = document.getElementById(elementId);
+            
+            if (!el) { clearInterval(activeTimers[elementId]); return; }
+
+            if (diff <= 0) {
+                el.innerText = expiryText;
+                el.style.color = "var(--danger)";
+                clearInterval(activeTimers[elementId]);
+                return;
+            }
+
+            const d = Math.floor(diff / 86400000);
+            const h = Math.floor((diff / 3600000) % 24);
+            const m = Math.floor((diff / 60000) % 60);
+            const s = Math.floor((diff / 1000) % 60);
+            el.innerText = `${d}d ${h}h ${m}m ${s}s`;
+        };
+
+        activeTimers[elementId] = setInterval(update, 1000);
+        update(); 
+    }
+
+    // Custom Exam CRUD (Create, Read, Update, Delete)
+    function addCustomExam() {
+        const name = document.getElementById("customName").value;
+        const deadline = document.getElementById("customDeadline").value;
+        const link = document.getElementById("customLink").value;
+
+        if (!name || !deadline) return alert("Fill required fields");
+
+        customExams.push({ name, deadline, link });
+        localStorage.setItem("customExams", JSON.stringify(customExams));
+        renderCustomTable();
+    }
+
+    function editCustom(index) {
+        const ex = customExams[index];
+        const newName = prompt("Edit Exam Name:", ex.name);
+        if (newName === null) return;
+
+        const newDeadline = prompt("Edit Deadline (YYYY-MM-DD):", ex.deadline);
+        if (!newDeadline) return;
+
+        customExams[index] = { name: newName, deadline: newDeadline, link: prompt("Edit Link:", ex.link) || "" };
+        localStorage.setItem("customExams", JSON.stringify(customExams));
+        renderCustomTable();
+    }
+
+    function deleteCustom(index) {
+        customExams.splice(index, 1);
+        localStorage.setItem("customExams", JSON.stringify(customExams));
+        renderCustomTable();
+    }
+
+    function renderCustomTable() {
+        const body = document.getElementById("customTableBody");
+        if (!body) return;
+        body.innerHTML = "";
+        
+        customExams.forEach((ex, i) => {
+            const days = Math.ceil((new Date(ex.deadline) - new Date()) / 86400000);
+            body.innerHTML += `
+                <tr>
+                    <td><strong>${ex.name}</strong></td>
+                    <td>${ex.deadline}</td>
+                    <td><span class="status-badge ${days <= 5 ? 'badge-danger' : 'badge-success'}">${days > 0 ? days + ' days' : 'Closed'}</span></td>
+                    <td><a href="${ex.link}" target="_blank">Link</a></td>
+                    <td>
+                        <button class="btn btn-outline" onclick="editCustom(${i})" style="padding:4px 8px; font-size:12px;">✏️ Edit</button>
+                        <button class="delete-btn" onclick="deleteCustom(${i})" style="margin-left:10px;">🗑️</button>
+                    </td>
+                </tr>`;
+        });
+    }
+
+    renderCustomTable();
+</script>
