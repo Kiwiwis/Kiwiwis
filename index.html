@@ -201,6 +201,8 @@ document.getElementById("registrationForm").addEventListener("submit", function(
     message.innerHTML = "Registration Successful!";
     message.className = "message success";
 
+    window.location.href = "Exams.html";
+
     document.getElementById("registrationForm").reset();
     generateCaptcha();
 });
@@ -209,3 +211,4 @@ document.getElementById("registrationForm").addEventListener("submit", function(
 
 </body>
 </html>
+
